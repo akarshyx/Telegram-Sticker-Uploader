@@ -208,7 +208,8 @@ def rebuild(path: Path):
     mascot = next(
         layer
         for layer in animation["layers"]
-        if layer.get("nm") == "GoldAce yellow penguin mascot"
+        if layer.get("nm")
+        in {"GoldAce yellow penguin mascot", "embedded penguin artwork"}
     )
     if mascot.get("ind") in source_layers:
         mascot["ind"] = 1000
@@ -228,6 +229,7 @@ def rebuild(path: Path):
     # The replacement is the complete sticker artwork and owns the motion.
     animation["layers"] = [mascot]
     animation["assets"] = []
+    animation.pop("tgs", None)
     path.write_bytes(
         gzip.compress(
             json.dumps(animation, separators=(",", ":")).encode("utf-8"),

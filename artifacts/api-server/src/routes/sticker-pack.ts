@@ -1,4 +1,4 @@
-import { gzipSync } from "node:zlib";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -36,8 +36,19 @@ type TelegramUpdate = {
   callback_query?: { from?: { id: number } };
 };
 
-type TelegramSticker = { file_id: string };
-type TelegramStickerSet = { stickers: TelegramSticker[] };
+type TelegramSticker = {
+  file_id: string;
+  is_animated?: boolean;
+  is_video?: boolean;
+};
+type TelegramStickerSet = {
+  name?: string;
+  title?: string;
+  is_animated?: boolean;
+  is_video?: boolean;
+  stickers: TelegramSticker[];
+};
+type TelegramFile = { file_path?: string };
 
 class TelegramRequestError extends Error {
   constructor(
@@ -102,6 +113,66 @@ function asUploadBlob(file: Buffer): Blob {
   const bytes = new Uint8Array(file.byteLength);
   bytes.set(file);
   return new Blob([bytes.buffer], { type: "application/gzip" });
+}
+
+function summarizeTgs(file: Buffer): Record<string, unknown> {
+  const animation = JSON.parse(gunzipSync(file).toString("utf8")) as {
+    [key: string]: unknown;
+  };
+  const layers = Array.isArray(animation.layers) ? animation.layers : [];
+  const typeCounts: Record<string, number> = {};
+  const countTypes = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(countTypes);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    if (typeof record.ty === "string") {
+      typeCounts[record.ty] = (typeCounts[record.ty] ?? 0) + 1;
+    }
+    Object.values(record).forEach(countTypes);
+  };
+  countTypes(layers);
+  return {
+    keys: Object.keys(animation).sort(),
+    version: animation.v,
+    tgs: animation.tgs,
+    width: animation.w,
+    height: animation.h,
+    frameRate: animation.fr,
+    inPoint: animation.ip,
+    outPoint: animation.op,
+    layerCount: layers.length,
+    assetCount: Array.isArray(animation.assets)
+      ? animation.assets.length
+      : undefined,
+    typeCounts,
+    layerTransforms: layers.map((layer) => {
+      if (!layer || typeof layer !== "object") return null;
+      const transform = (layer as Record<string, unknown>).ks;
+      if (!transform || typeof transform !== "object") return null;
+      const keys = transform as Record<string, unknown>;
+      return {
+        keys: Object.keys(keys).sort(),
+        position: keys.p,
+        anchor: keys.a,
+        scale: keys.s,
+      };
+    }),
+  };
+}
+
+async function downloadTelegramFile(fileId: string): Promise<Buffer | null> {
+  const file = await telegramJson<TelegramFile>("getFile", {
+    file_id: fileId,
+  });
+  if (!file.file_path) return null;
+  const response = await fetch(
+    `https://api.telegram.org/file/bot${getBotToken()}/${file.file_path}`,
+  );
+  if (!response.ok) return null;
+  return Buffer.from(await response.arrayBuffer());
 }
 
 function cleanAnimation(value: unknown): unknown {
@@ -360,6 +431,33 @@ router.post("/sticker-pack/publish-yellow", async (req, res) => {
     const existing = await stickerSetExists(shortName);
 
     if (existing) {
+      req.log.info(
+        {
+          existingSet: {
+            name: existing.name,
+            title: existing.title,
+            isAnimated: existing.is_animated,
+            isVideo: existing.is_video,
+            stickerFormats: existing.stickers.map((sticker) => ({
+              isAnimated: sticker.is_animated,
+              isVideo: sticker.is_video,
+            })),
+          },
+        },
+        "Found existing Telegram sticker set",
+      );
+      const referenceFile = existing.stickers[0]
+        ? await downloadTelegramFile(existing.stickers[0].file_id)
+        : null;
+      if (referenceFile) {
+        req.log.info(
+          {
+            existingTgs: summarizeTgs(referenceFile),
+            generatedTgs: summarizeTgs(files[0]),
+          },
+          "Compared generated TGS with Telegram sticker",
+        );
+      }
       await replaceExistingStickerSet(
         userId,
         shortName,
