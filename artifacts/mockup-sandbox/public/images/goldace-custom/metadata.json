@@ -1,0 +1,47 @@
+{
+  "title": "GoldAce Yellow",
+  "sourcePack": "ST_4SgxceonKKJaS1lSqC0HtWkP_QszrcOUd9xfUjno_by_StickersPackRobot",
+  "selectedCount": 5,
+  "stickers": [
+    {
+      "index": 1,
+      "source": "01.tgs",
+      "emoji": "😍",
+      "format": "animated",
+      "mascot": "penguin mascot from reference",
+      "theme": "gold"
+    },
+    {
+      "index": 2,
+      "source": "02.tgs",
+      "emoji": "😬",
+      "format": "animated",
+      "mascot": "penguin mascot from reference",
+      "theme": "gold"
+    },
+    {
+      "index": 3,
+      "source": "03.tgs",
+      "emoji": "🏴",
+      "format": "animated",
+      "mascot": "penguin mascot from reference",
+      "theme": "gold"
+    },
+    {
+      "index": 4,
+      "source": "04.tgs",
+      "emoji": "🤨",
+      "format": "animated",
+      "mascot": "penguin mascot from reference",
+      "theme": "gold"
+    },
+    {
+      "index": 5,
+      "source": "05.tgs",
+      "emoji": "🎲",
+      "format": "animated",
+      "mascot": "penguin mascot from reference",
+      "theme": "gold"
+    }
+  ]
+}

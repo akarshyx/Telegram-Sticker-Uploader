@@ -1,15 +1,15 @@
-# [Project name]
+# GoldAce Sticker Pack
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Creates a polished Telegram animated sticker pack from the GoldAce assets and
+uploads the finished five-sticker set under the title “GoldAce Sticker Pack.”
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the Telegram upload API
+- `pnpm --filter @workspace/mockup-sandbox run dev` — run the clean sticker preview
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secret: `TELEGRAM_BOT_TOKEN`
 
 ## Stack
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/mockup-sandbox/public/images/goldace/` — clean Lottie JSON source
+- `artifacts/mockup-sandbox/src/components/mockups/goldace-stickers/GoldAce.tsx` — preview and publish control
+- `artifacts/api-server/src/routes/sticker-pack.ts` — TGS conversion and Telegram Bot API upload
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The source animations are cleaned before preview and upload, not just visually covered in the UI.
+- Telegram receives gzipped Lottie JSON as animated `.tgs` files.
+- The user-facing pack title is `GoldAce Sticker Pack`; Telegram's required short name is derived from the bot username.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The preview shows the five finished animations and publishes them as a Telegram
+sticker pack named `GoldAce Sticker Pack`.
 
 ## User preferences
 
@@ -38,7 +43,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Telegram identifies the pack owner from the most recent bot update, so the owner
+  must send `/start` to the bot before publishing.
+- If the pack already exists, publishing replaces its current stickers with the
+  clean versions.
 
 ## Pointers
 

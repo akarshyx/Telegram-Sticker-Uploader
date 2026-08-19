@@ -1,0 +1,31 @@
+{
+  "title": "GoldAce 6-7",
+  "sourceTitle": "GoldAce 6-7",
+  "count": 3,
+  "stickers": [
+    {
+      "index": 1,
+      "emoji": "\ud83c\udfc8",
+      "isAnimated": true,
+      "isVideo": false,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "index": 2,
+      "emoji": "\ud83c\udfbe",
+      "isAnimated": true,
+      "isVideo": false,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "index": 3,
+      "emoji": "\ud83c\udfc0",
+      "isAnimated": true,
+      "isVideo": false,
+      "width": 512,
+      "height": 512
+    }
+  ]
+}

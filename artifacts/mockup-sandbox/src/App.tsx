@@ -1,6 +1,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 
 import { modules as discoveredModules } from "./.generated/mockup-components";
+import { GoldAce } from "./components/mockups/goldace-stickers/GoldAce";
 
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 
@@ -37,7 +38,13 @@ function PreviewRenderer({
 
     async function loadComponent(): Promise<void> {
       const key = `./components/mockups/${componentPath}.tsx`;
-      const loader = modules[key];
+      const loader =
+        modules[key] ??
+        Object.entries(modules).find(
+          ([candidate]) =>
+            candidate.replace(/^\.\/?/, "") ===
+            key.replace(/^\.\/?/, ""),
+        )?.[1];
       if (!loader) {
         setError(`No component found at ${componentPath}.tsx`);
         return;
@@ -130,6 +137,10 @@ function getPreviewPath(): string | null {
 
 function App() {
   const previewPath = getPreviewPath();
+
+  if (previewPath === "components/mockups/goldace-stickers/GoldAce") {
+    return <GoldAce />;
+  }
 
   if (previewPath) {
     return (
